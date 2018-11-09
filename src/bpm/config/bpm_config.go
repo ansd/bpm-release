@@ -19,7 +19,10 @@ import (
 	"encoding/base32"
 	"fmt"
 	"path/filepath"
+	"strings"
 )
+
+const containerIdPrefix = "bpm."
 
 func RuncPath(boshRoot string) string {
 	return filepath.Join(boshRoot, "packages", "bpm", "bin", "runc")
@@ -158,13 +161,13 @@ func (c *BPMConfig) ContainerID() string {
 func Encode(containerID string) string {
 	enc := base32.StdEncoding
 	enc = enc.WithPadding('-')
-	return enc.EncodeToString([]byte(containerID))
+	return fmt.Sprintf("%s%s", containerIdPrefix, enc.EncodeToString([]byte(containerID)))
 }
 
 func Decode(containerID string) (string, error) {
 	enc := base32.StdEncoding
 	enc = enc.WithPadding('-')
-	data, err := enc.DecodeString(containerID)
+	data, err := enc.DecodeString(strings.TrimPrefix(containerID, containerIdPrefix))
 	if err != nil {
 		return "", err
 	}
